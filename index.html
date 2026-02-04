@@ -7,6 +7,10 @@
 body { font-family: Arial; text-align: center; padding: 30px; }
 input, button { font-size: 18px; padding: 10px; margin: 8px; width: 250px; }
 button { background:#2196F3; color:white; border:none; border-radius:6px; }
+#networks button {
+  width: 260px;
+  background:#4CAF50;
+}
 </style>
 </head>
 <body>
@@ -15,49 +19,85 @@ button { background:#2196F3; color:white; border:none; border-radius:6px; }
 
 <input id="ssid" placeholder="WiFi Name"><br>
 <input id="pass" placeholder="WiFi Password" type="password"><br>
+
+<button onclick="scanWifi()">Scan Nearby WiFi</button><br>
+<div id="networks"></div>
+
 <button onclick="connect()">Connect Watch</button>
 
 <p id="status"></p>
 
 <script>
 const SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-const RX_UUID      = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"; // ESP nhận
-const TX_UUID      = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"; // ESP gửi (optional)
+const RX_UUID      = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"; // ESP nhận lệnh
+const TX_UUID      = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"; // ESP gửi phản hồi
 
-let rxChar;
+let rxChar, txChar;
+
+async function initBLE() {
+  const device = await navigator.bluetooth.requestDevice({
+    acceptAllDevices: true,
+    optionalServices: [SERVICE_UUID]
+  });
+
+  const server = await device.gatt.connect();
+  const service = await server.getPrimaryService(SERVICE_UUID);
+
+  rxChar = await service.getCharacteristic(RX_UUID);
+  txChar = await service.getCharacteristic(TX_UUID);
+
+  await txChar.startNotifications();
+
+  txChar.addEventListener('characteristicvaluechanged', e => {
+    let msg = new TextDecoder().decode(e.target.value);
+
+    // ===== DANH SÁCH WIFI =====
+    if (msg.startsWith("NET:")) {
+      let ssid = msg.substring(4);
+
+      let btn = document.createElement("button");
+      btn.innerText = ssid;
+      btn.onclick = () => {
+        document.getElementById("ssid").value = ssid;
+      };
+      networks.appendChild(btn);
+    }
+    else if (msg === "SCAN_DONE") {
+      status.innerText = "Scan complete.";
+    }
+    else {
+      status.innerText = msg; // CONNECTING / WIFI_OK / WIFI_FAIL
+    }
+  });
+}
+
+async function scanWifi() {
+  try {
+    status.innerText = "Connecting to watch...";
+    networks.innerHTML = "";
+
+    if (!rxChar) await initBLE();
+
+    status.innerText = "Scanning WiFi networks...";
+    await rxChar.writeValue(new TextEncoder().encode("SCAN"));
+  }
+  catch(e){
+    status.innerText = "Error: " + e;
+  }
+}
 
 async function connect() {
   try {
-    status.innerText = "Connecting to watch...";
-
-    const device = await navigator.bluetooth.requestDevice({
-      acceptAllDevices: true,
-      optionalServices: [SERVICE_UUID]
-    });
-
-    const server = await device.gatt.connect();
-    const service = await server.getPrimaryService(SERVICE_UUID);
-
-    // 🔵 Characteristic để GỬI dữ liệu tới watch
-    const rxChar = await service.getCharacteristic(RX_UUID);
-
-    // 🟢 Characteristic để NHẬN phản hồi từ watch
-    const txChar = await service.getCharacteristic(TX_UUID);
-    await txChar.startNotifications();
-
-    txChar.addEventListener('characteristicvaluechanged', e => {
-      let msg = new TextDecoder().decode(e.target.value);
-      status.innerText = msg;   // hiển thị CONNECTING / WIFI_OK
-    });
+    if (!rxChar) await initBLE();
 
     let ssid = document.getElementById("ssid").value;
     let pass = document.getElementById("pass").value;
 
+    status.innerText = "Sending WiFi info...";
+
     await rxChar.writeValue(new TextEncoder().encode("WIFI:" + ssid));
     await new Promise(r => setTimeout(r, 300));
     await rxChar.writeValue(new TextEncoder().encode("PASS:" + pass));
-
-    status.innerText = "Sending WiFi info...";
   }
   catch(e){
     status.innerText = "Error: " + e;
@@ -68,7 +108,3 @@ async function connect() {
 
 </body>
 </html>
-
-
-
-
