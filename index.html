@@ -28,7 +28,8 @@ async function connect() {
     status.innerText = "Scanning for watch...";
 
     const device = await navigator.bluetooth.requestDevice({
-      filters: [{ namePrefix: "ESP32_Clock" }],
+      acceptAllDevices: true,
+      optionalServices: [SERVICE_UUID]
       optionalServices: [SERVICE_UUID]
     });
 
@@ -53,4 +54,5 @@ async function connect() {
 
 </body>
 </html>
+
 
