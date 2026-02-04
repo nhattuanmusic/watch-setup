@@ -38,7 +38,17 @@ async function connect() {
     const server = await device.gatt.connect();
     const service = await server.getPrimaryService(SERVICE_UUID);
 
-    rxChar = await service.getCharacteristic(RX_UUID);
+    // 🔵 Characteristic để GỬI dữ liệu tới watch
+    const rxChar = await service.getCharacteristic(RX_UUID);
+
+    // 🟢 Characteristic để NHẬN phản hồi từ watch
+    const txChar = await service.getCharacteristic(TX_UUID);
+    await txChar.startNotifications();
+
+    txChar.addEventListener('characteristicvaluechanged', e => {
+      let msg = new TextDecoder().decode(e.target.value);
+      status.innerText = msg;   // hiển thị CONNECTING / WIFI_OK
+    });
 
     let ssid = document.getElementById("ssid").value;
     let pass = document.getElementById("pass").value;
@@ -47,7 +57,7 @@ async function connect() {
     await new Promise(r => setTimeout(r, 300));
     await rxChar.writeValue(new TextEncoder().encode("PASS:" + pass));
 
-    status.innerText = "WiFi info sent! Watch connecting...";
+    status.innerText = "Sending WiFi info...";
   }
   catch(e){
     status.innerText = "Error: " + e;
@@ -58,6 +68,7 @@ async function connect() {
 
 </body>
 </html>
+
 
 
 
