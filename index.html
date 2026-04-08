@@ -70,6 +70,30 @@ input{
 
 }
 
+.connected{
+
+ color:#00e676;
+
+ font-weight:bold;
+
+}
+
+.disconnected{
+
+ color:#ff5252;
+
+ font-weight:bold;
+
+}
+
+.connecting{
+
+ color:#ffd54f;
+
+ font-weight:bold;
+
+}
+
 </style>
 
 </head>
@@ -80,7 +104,7 @@ input{
 
 <button onclick="initBLE()">Connect Watch</button>
 
-<p id="status">Disconnected</p>
+<p id="status" class="disconnected">Disconnected</p>
 
 <div class="card">
 
@@ -129,7 +153,8 @@ let txChar;
 async function initBLE(){
 
  try{
-
+  status.innerText="Connecting...";
+  status.className="connecting";
   const device =
   await navigator.bluetooth.requestDevice({
 
@@ -176,14 +201,15 @@ async function initBLE(){
 
   );
 
-  status.innerText=
-  "Connected";
+  status.innerText="● Connected";
+
+  status.className="connected";
 
  }
  catch(e){
 
-  status.innerText=
-  "Error "+e;
+  status.innerText="Disconnected";
+  status.className="disconnected";
 
  }
 
