@@ -112,6 +112,8 @@ const TX_UUID="6e400003-b5a3-f393-e0a9-e50e24dcca9e";
 
 let rxChar;
 let txChar;
+let status=document.getElementById("status");
+let msgBox=document.getElementById("msg");
 
 async function initBLE(){
 
@@ -146,7 +148,7 @@ e=>{
 let msg=
 new TextDecoder().decode(e.target.value);
 
-document.getElementById("msg").innerText=msg;
+msgBox.innerText=msg;
 
 }
 );
@@ -183,7 +185,7 @@ if(txt=="")return;
 
 await sendCmd("NOTE "+txt);
 
-document.getElementById("msg").innerText="Note sent";
+msgBox.innerText="Note sent";
 
 }
 
