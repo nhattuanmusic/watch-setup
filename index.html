@@ -151,10 +151,9 @@ let rxChar;
 let txChar;
 
 async function initBLE(){
-
- try{
   status.innerText="Connecting...";
   status.className="connecting";
+ try{
   const device =
   await navigator.bluetooth.requestDevice({
 
