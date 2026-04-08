@@ -1,101 +1,73 @@
 <!DOCTYPE html>
 <html>
 <head>
-
 <meta charset="utf-8">
-
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ESP32 Watch Control</title>
 
 <style>
 
 body{
-
- font-family:Arial;
-
- background:#0f141a;
-
- color:white;
-
- text-align:center;
-
- padding:30px;
-
+font-family:Arial;
+background:#0f141a;
+color:white;
+text-align:center;
+padding:25px;
 }
 
 button{
+font-size:17px;
+padding:12px;
+margin:6px;
+width:150px;
+background:#1e88e5;
+color:white;
+border:none;
+border-radius:10px;
+}
 
- font-size:18px;
-
- padding:12px;
-
- margin:6px;
-
- width:160px;
-
- background:#1e88e5;
-
- color:white;
-
- border:none;
-
- border-radius:10px;
-
+button:active{
+background:#1565c0;
 }
 
 input{
-
- font-size:18px;
-
- padding:12px;
-
- margin:6px;
-
- width:260px;
-
- border-radius:8px;
-
- border:none;
-
+font-size:17px;
+padding:12px;
+margin:8px;
+width:260px;
+border-radius:8px;
+border:none;
 }
 
 .card{
-
- background:#1c232b;
-
- padding:20px;
-
- border-radius:12px;
-
- margin:20px;
-
+background:#1c232b;
+padding:18px;
+border-radius:12px;
+margin:18px;
 }
 
 .connected{
-
- color:#00e676;
-
- font-weight:bold;
-
+color:#00e676;
+font-weight:bold;
 }
 
 .disconnected{
-
- color:#ff5252;
-
- font-weight:bold;
-
+color:#ff5252;
+font-weight:bold;
 }
 
 .connecting{
+color:#ffd54f;
+font-weight:bold;
+}
 
- color:#ffd54f;
-
- font-weight:bold;
-
+#msg{
+color:#9fb3c8;
+margin-top:8px;
+font-size:14px;
 }
 
 </style>
-
 </head>
 
 <body>
@@ -104,23 +76,19 @@ input{
 
 <button onclick="initBLE()">Connect Watch</button>
 
-<p id="status" class="disconnected">Disconnected</p>
+<p id="status" class="disconnected">● Disconnected</p>
+
+<p id="msg"></p>
 
 <div class="card">
 
 <h3>Quick Actions</h3>
 
-<button onclick="sendCmd('FACE HOME')">Home</button>
+<button onclick="sendCmd('UI FACE 1')">Main</button>
 
-<button onclick="sendCmd('FACE NOTE')">Notes</button>
-
-<button onclick="sendCmd('FACE WEATHER')">Weather</button>
+<button onclick="sendCmd('UI FACE 2')">Minimal</button>
 
 <button onclick="sendCmd('STATUS')">Status</button>
- 
-<button onclick="sendCmd('UI FACE 1')">UI Face 1</button>
-
-<button onclick="sendCmd('UI FACE 2')">UI Face 2</button>
 
 </div>
 
@@ -132,115 +100,94 @@ input{
 
 <br>
 
-<button onclick="sendNote()">Send Note</button>
+<button onclick="sendNote()">Send</button>
 
 </div>
 
 <script>
 
-const SERVICE_UUID =
-"6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-
-const RX_UUID =
-"6e400002-b5a3-f393-e0a9-e50e24dcca9e";
-
-const TX_UUID =
-"6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+const SERVICE_UUID="6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+const RX_UUID="6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+const TX_UUID="6e400003-b5a3-f393-e0a9-e50e24dcca9e";
 
 let rxChar;
 let txChar;
 
 async function initBLE(){
-  status.innerText="Connecting...";
-  status.className="connecting";
- try{
-  const device =
-  await navigator.bluetooth.requestDevice({
 
-   acceptAllDevices:true,
+status.innerText="● Connecting...";
+status.className="connecting";
 
-   optionalServices:[SERVICE_UUID]
+try{
 
-  });
+const device=
+await navigator.bluetooth.requestDevice({
+acceptAllDevices:true,
+optionalServices:[SERVICE_UUID]
+});
 
-  const server =
-  await device.gatt.connect();
+const server=await device.gatt.connect();
 
-  const service =
-  await server.getPrimaryService(
-   SERVICE_UUID
-  );
+const service=
+await server.getPrimaryService(SERVICE_UUID);
 
-  rxChar =
-  await service.getCharacteristic(
-   RX_UUID
-  );
+rxChar=
+await service.getCharacteristic(RX_UUID);
 
-  txChar =
-  await service.getCharacteristic(
-   TX_UUID
-  );
+txChar=
+await service.getCharacteristic(TX_UUID);
 
-  await txChar.startNotifications();
+await txChar.startNotifications();
 
-  txChar.addEventListener(
-   'characteristicvaluechanged',
+txChar.addEventListener(
+'characteristicvaluechanged',
+e=>{
 
-   e=>{
+let msg=
+new TextDecoder().decode(e.target.value);
 
-    let msg =
-    new TextDecoder().decode(
-     e.target.value
-    );
+document.getElementById("msg").innerText=msg;
 
-    status.innerText=
-    "Watch: "+msg;
+}
+);
 
-   }
+status.innerText="● Connected";
+status.className="connected";
 
-  );
+}
+catch(e){
 
-  status.innerText="● Connected";
+status.innerText="● Disconnected";
+status.className="disconnected";
 
-  status.className="connected";
-
- }
- catch(e){
-
-  status.innerText="Disconnected";
-  status.className="disconnected";
-
- }
+}
 
 }
 
 async function sendCmd(cmd){
 
- if(!rxChar) return;
+if(!rxChar)return;
 
- await rxChar.writeValue(
-
-  new TextEncoder().encode(cmd)
-
- );
+await rxChar.writeValue(
+new TextEncoder().encode(cmd)
+);
 
 }
 
 async function sendNote(){
 
- let txt=
- document.getElementById("noteText").value;
+let txt=
+document.getElementById("noteText").value;
 
- if(txt=="") return;
+if(txt=="")return;
 
- await sendCmd("NOTE "+txt);
+await sendCmd("NOTE "+txt);
+
+document.getElementById("msg").innerText="Note sent";
 
 }
 
 </script>
-
-</body>
-</html>
 
 </body>
 </html>
