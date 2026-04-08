@@ -1,29 +1,36 @@
 <!DOCTYPE html>
 <html>
 <head>
+
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ESP32 Watch Control</title>
+
+<title>NTT Watch Control</title>
 
 <style>
 
 body{
 font-family:Arial;
-background:#0f141a;
+background:#0b0f14;
 color:white;
-text-align:center;
-padding:25px;
+margin:0;
+padding:12px;
+}
+
+h2{
+margin-top:10px;
+margin-bottom:5px;
 }
 
 button{
-font-size:17px;
-padding:12px;
-margin:6px;
-width:150px;
+font-size:16px;
+padding:14px;
+margin:6px 0;
+width:100%;
 background:#1e88e5;
 color:white;
 border:none;
-border-radius:10px;
+border-radius:12px;
 }
 
 button:active{
@@ -31,76 +38,168 @@ background:#1565c0;
 }
 
 input{
-font-size:17px;
-padding:12px;
-margin:8px;
-width:260px;
-border-radius:8px;
+font-size:16px;
+padding:14px;
+margin-top:8px;
+width:100%;
+border-radius:10px;
 border:none;
+box-sizing:border-box;
 }
 
 .card{
-background:#1c232b;
-padding:18px;
-border-radius:12px;
-margin:18px;
+
+background:#161c22;
+
+padding:16px;
+
+border-radius:14px;
+
+margin-top:14px;
+
+box-shadow:0 4px 12px rgba(0,0,0,0.4);
+
+}
+
+.sectionTitle{
+
+font-size:14px;
+
+color:#8fa3b8;
+
+margin-bottom:8px;
+
+text-align:left;
+
+}
+
+.grid{
+
+display:grid;
+
+grid-template-columns:1fr 1fr;
+
+gap:8px;
+
 }
 
 .connected{
+
+background:#133d2a;
+
 color:#00e676;
-font-weight:bold;
+
+padding:8px;
+
+border-radius:8px;
+
+margin-top:8px;
+
+font-size:14px;
+
 }
 
 .disconnected{
+
+background:#3a1c1c;
+
 color:#ff5252;
-font-weight:bold;
+
+padding:8px;
+
+border-radius:8px;
+
+margin-top:8px;
+
+font-size:14px;
+
 }
 
 .connecting{
+
+background:#3a3515;
+
 color:#ffd54f;
-font-weight:bold;
+
+padding:8px;
+
+border-radius:8px;
+
+margin-top:8px;
+
+font-size:14px;
+
 }
 
 #msg{
+
 color:#9fb3c8;
-margin-top:8px;
-font-size:14px;
+
+margin-top:6px;
+
+font-size:13px;
+
+}
+
+.connectBtn{
+
+background:#00c853;
+
+margin-top:10px;
+
+}
+
+.connectBtn:active{
+
+background:#00a844;
+
 }
 
 </style>
+
 </head>
 
 <body>
 
-<h2>ESP32 Watch Control</h2>
+<h2>NTT Watch</h2>
 
-<button onclick="initBLE()">Connect Watch</button>
+<button class="connectBtn" onclick="initBLE()">Connect Watch</button>
 
-<p id="status" class="disconnected">● Disconnected</p>
+<div id="status" class="disconnected">
+● Disconnected
+</div>
 
-<p id="msg"></p>
+<div id="msg"></div>
 
 <div class="card">
 
-<h3>Quick Actions</h3>
+<div class="sectionTitle">DISPLAY</div>
+
+<div class="grid">
 
 <button onclick="sendCmd('UI FACE 1')">Main</button>
 
 <button onclick="sendCmd('UI FACE 2')">Minimal</button>
 
-<button onclick="sendCmd('STATUS')">Status</button>
+</div>
 
 </div>
 
 <div class="card">
 
-<h3>Send Note</h3>
+<div class="sectionTitle">QUICK ACTION</div>
 
-<input id="noteText" placeholder="Type note">
+<button onclick="sendCmd('STATUS')">Get Status</button>
 
-<br>
+</div>
 
-<button onclick="sendNote()">Send</button>
+<div class="card">
+
+<div class="sectionTitle">SEND NOTE</div>
+
+<input id="noteText" placeholder="Type note...">
+
+<button onclick="sendNote()">Send Note</button>
 
 </div>
 
@@ -112,6 +211,7 @@ const TX_UUID="6e400003-b5a3-f393-e0a9-e50e24dcca9e";
 
 let rxChar;
 let txChar;
+
 let status=document.getElementById("status");
 let msgBox=document.getElementById("msg");
 
@@ -154,12 +254,14 @@ msgBox.innerText=msg;
 );
 
 status.innerText="● Connected";
+
 status.className="connected";
 
 }
 catch(e){
 
 status.innerText="● Disconnected";
+
 status.className="disconnected";
 
 }
