@@ -281,13 +281,26 @@ new TextEncoder().encode(cmd)
 async function sendNote(){
 
 let txt=
-document.getElementById("noteText").value;
+document.getElementById("noteText").value.trim();
 
-if(txt=="")return;
+if(!rxChar){
+msgBox.innerText="Connect first";
+return;
+}
+
+if(txt==""){
+msgBox.innerText="Empty note";
+return;
+}
+
+// Convert line breaks
+txt=txt.replace(/\n/g,"\\n");
 
 await sendCmd("NOTE "+txt);
 
 msgBox.innerText="Note sent";
+
+document.getElementById("noteText").value="";
 
 }
 
