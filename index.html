@@ -48,116 +48,84 @@ box-sizing:border-box;
 }
 
 .card{
-
 background:#161311;
-
 padding:16px;
-
 border-radius:14px;
-
 margin-top:14px;
-
 box-shadow:0 4px 12px rgba(0,0,0,0.4);
-
 }
 
 .sectionTitle{
-
 font-size:14px;
-
 color:#8fa3b8;
-
 margin-bottom:8px;
-
 text-align:left;
-
 }
 
 .grid{
-
 display:grid;
-
 grid-template-columns:1fr 1fr;
-
 gap:8px;
-
 }
 
 .connected{
-
 background:#133d2a;
-
 color:#00e676;
-
 padding:8px;
-
 border-radius:8px;
-
 margin-top:8px;
-
 font-size:14px;
-
 }
 
 .disconnected{
-
 background:#3a1c1c;
-
 color:#ff5252;
-
 padding:8px;
-
 border-radius:8px;
-
 margin-top:8px;
-
 font-size:14px;
-
 }
 
 .connecting{
-
 background:#3a3515;
-
 color:#ffd54f;
-
 padding:8px;
-
 border-radius:8px;
-
 margin-top:8px;
-
 font-size:14px;
-
 }
 
 #msg{
-
 color:#9fb3c8;
-
 margin-top:6px;
-
 font-size:13px;
-
 }
 
 .connectBtn{
-  
 background:#e53935;
 box-shadow:0 2px 6px rgba(255,111,0,0.4);
-
 margin-top:10px;
-
 }
 
 .connectBtn:active{
-  
 background:#ef6c00;
+}
 
+.row{
+display:flex;
+gap:8px;
+margin-bottom:8px;
+}
+
+.row input{
+flex:1;
+}
+
+.row button{
+width:120px;
 }
 
 </style>
-
 </head>
 
 <body>
@@ -175,33 +143,43 @@ background:#ef6c00;
 <div class="card">
 
 <div class="sectionTitle">DISPLAY</div>
-
 <div class="grid">
-
 <button onclick="sendCmd('UI FACE 1')">Main</button>
-
 <button onclick="sendCmd('UI FACE 2')">Minimal</button>
+</div>
+</div>
+
+
+<div class="card">
+<div class="sectionTitle">TIME & DATE</div>
+<div class="row">
+<input id="timeInput"
+placeholder="08:30">
+<button onclick="setTime()">
+Set Time
+</button>
 
 </div>
 
+<div class="row">
+<input id="dateInput"
+placeholder="14/05/2026">
+<button onclick="setDate()">
+Set Date
+</button>
+
+</div>
 </div>
 
 <div class="card">
-
 <div class="sectionTitle">QUICK ACTION</div>
-
 <button onclick="sendCmd('STATUS')">Get Status</button>
-
 </div>
 
 <div class="card">
-
 <div class="sectionTitle">SEND NOTE</div>
-
 <input id="noteText" placeholder="Type note...">
-
 <button onclick="sendNote()">Send Note</button>
-
 </div>
 
 <script>
@@ -255,18 +233,13 @@ msgBox.innerText=msg;
 );
 
 status.innerText="● Connected";
-
 status.className="connected";
 
 }
 catch(e){
-
 status.innerText="● Disconnected";
-
 status.className="disconnected";
-
 }
-
 }
 
 async function sendCmd(cmd){
@@ -280,7 +253,6 @@ new TextEncoder().encode(cmd)
 }
 
 async function sendNote(){
-
 let txt=
 document.getElementById("noteText").value.trim();
 
@@ -298,13 +270,35 @@ return;
 txt=txt.replace(/\n/g,"\\n");
 
 await sendCmd("NOTE "+txt);
-
 msgBox.innerText="Note sent";
 
 document.getElementById("noteText").value="";
-
 }
 
+async function setTime(){
+let t=
+document.getElementById("timeInput").value;
+
+if(!rxChar){
+msgBox.innerText="Connect first";
+return;
+}
+await sendCmd("SET "+t);
+msgBox.innerText="Time sent";
+}
+
+async function setDate(){
+let d=
+document.getElementById("dateInput").value;
+
+if(!rxChar){
+msgBox.innerText="Connect first";
+return;
+}
+await sendCmd("SETDATE "+d);
+msgBox.innerText="Date sent";
+}
+  
 </script>
 
 </body>
