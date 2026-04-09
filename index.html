@@ -338,6 +338,13 @@ await sendCmd("EVENT "+d);
 msgBox.innerText="Event added";
 document.getElementById("eventInput").value="";
 }
+
+async function removeEvent(){
+let d=
+document.getElementById("eventRemove").value;
+await sendCmd("EVENTCLR "+d);
+msgBox.innerText="Event removed";
+}
   
 </script>
 
