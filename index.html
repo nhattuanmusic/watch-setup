@@ -172,6 +172,22 @@ Set Date
 </div>
 
 <div class="card">
+<div class="sectionTitle">
+EVENT MARKER
+</div>
+
+<div class="row">
+<input id="eventInput"
+placeholder="14/05">
+
+<button onclick="addEvent()">
+Add Event
+</button>
+
+</div>
+</div>
+
+<div class="card">
 <div class="sectionTitle">QUICK ACTION</div>
 <button onclick="sendCmd('STATUS')">Get Status</button>
 </div>
@@ -297,6 +313,20 @@ return;
 }
 await sendCmd("SETDATE "+d);
 msgBox.innerText="Date sent";
+}
+
+async function addEvent(){
+let d=
+document.getElementById("eventInput").value;
+
+if(!rxChar){
+msgBox.innerText="Connect first";
+return;
+}
+
+await sendCmd("EVENT "+d);
+msgBox.innerText="Event added";
+document.getElementById("eventInput").value="";
 }
   
 </script>
