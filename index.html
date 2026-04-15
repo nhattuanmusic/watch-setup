@@ -409,8 +409,8 @@ async function sendImage(){
 
       let rgb565 = (r5 << 11) | (g6 << 5) | b5;
 
-      bytes[i*2]   = rgb565 & 0xFF;
-      bytes[i*2+1] = rgb565 >> 8;
+      bytes[i*2]   = rgb565 >> 8;
+      bytes[i*2+1] = rgb565 & 0xFF;
     }
 
     await sendText("IMG_START");
