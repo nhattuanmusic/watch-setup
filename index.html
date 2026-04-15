@@ -387,35 +387,37 @@ async function sendImage(){
 
   img.onload = async () => {
 
-    canvas.width = 32;
-    canvas.height = 32;
+    canvas.width = 64;
+    canvas.height = 64;
 
     ctx.drawImage(img, 0, 0, 32, 32);
 
     const data = ctx.getImageData(0, 0, 32, 32).data;
 
-    let bytes = new Uint8Array(128);
+    let bytes = new Uint8Array(64 * 64 * 2);
 
-    for(let i=0;i<1024;i++){
+    for(let i=0;i<64*64;i++){
 
       let r = data[i*4];
       let g = data[i*4+1];
       let b = data[i*4+2];
 
-      let gray = (r+g+b)/3;
-      let bit = gray > 128 ? 1 : 0;
+      // convert RGB888 → RGB565
+      let r5 = r >> 3;
+      let g6 = g >> 2;
+      let b5 = b >> 3;
 
-      let byteIndex = Math.floor(i/8);
-      let bitIndex = 7 - (i % 8);
+      let rgb565 = (r5 << 11) | (g6 << 5) | b5;
 
-      if(bit) bytes[byteIndex] |= (1 << bitIndex);
+      bytes[i*2]   = rgb565 >> 8;
+      bytes[i*2+1] = rgb565 & 0xFF;
     }
 
     await sendText("IMG_START");
 
-    for(let i=0;i<bytes.length;i+=20){
-      await sendRaw(bytes.slice(i, i+20));
-      await sleep(10);
+    for(let i=0;i<bytes.length;i+=100){
+      await sendRaw(bytes.slice(i, i+100));
+      await sleep(20);
     }
 
     await sendText("IMG_END");
