@@ -390,9 +390,9 @@ async function sendImage(){
     canvas.width = 64;
     canvas.height = 64;
 
-    ctx.drawImage(img, 0, 0, 32, 32);
+    ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, 64, 64);
 
-    const data = ctx.getImageData(0, 0, 32, 32).data;
+    const data = ctx.getImageData(0, 0, 64, 64).data;
 
     let bytes = new Uint8Array(64 * 64 * 2);
 
